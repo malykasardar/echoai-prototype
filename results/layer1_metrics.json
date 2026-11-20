@@ -1,0 +1,143 @@
+[
+  {
+    "model": "rules",
+    "threshold": 0.5,
+    "da_precision": 0.0439,
+    "da_recall": 0.25,
+    "da_f1": 0.0747,
+    "pr_auc": 0.0249,
+    "item_recall_all": 0.3333,
+    "item_recall_actions": 0.4444,
+    "item_recall_decisions": 0.2963,
+    "share_of_das_passed": 0.1054,
+    "share_of_words_passed": 0.2138,
+    "recall_by_group": {
+      "sex=F": {
+        "positives": 85,
+        "recall": 0.2471
+      },
+      "sex=M": {
+        "positives": 25,
+        "recall": 0.28
+      },
+      "native_english=no": {
+        "positives": 84,
+        "recall": 0.2738
+      },
+      "native_english=yes": {
+        "positives": 76,
+        "recall": 0.2237
+      },
+      "role=ID": {
+        "positives": 27,
+        "recall": 0.2222
+      },
+      "role=ME": {
+        "positives": 33,
+        "recall": 0.3333
+      },
+      "role=PM": {
+        "positives": 78,
+        "recall": 0.2051
+      },
+      "role=UI": {
+        "positives": 22,
+        "recall": 0.3182
+      }
+    }
+  },
+  {
+    "model": "tfidf",
+    "threshold": 0.1194,
+    "da_precision": 0.036,
+    "da_recall": 0.7562,
+    "da_f1": 0.0687,
+    "pr_auc": 0.1005,
+    "item_recall_all": 0.8889,
+    "item_recall_actions": 0.9444,
+    "item_recall_decisions": 0.8704,
+    "share_of_das_passed": 0.3887,
+    "share_of_words_passed": 0.4965,
+    "recall_by_group": {
+      "sex=F": {
+        "positives": 85,
+        "recall": 0.7529
+      },
+      "sex=M": {
+        "positives": 25,
+        "recall": 0.72
+      },
+      "native_english=no": {
+        "positives": 84,
+        "recall": 0.7619
+      },
+      "native_english=yes": {
+        "positives": 76,
+        "recall": 0.75
+      },
+      "role=ID": {
+        "positives": 27,
+        "recall": 0.5926
+      },
+      "role=ME": {
+        "positives": 33,
+        "recall": 0.7879
+      },
+      "role=PM": {
+        "positives": 78,
+        "recall": 0.8077
+      },
+      "role=UI": {
+        "positives": 22,
+        "recall": 0.7273
+      }
+    }
+  },
+  {
+    "model": "roberta",
+    "threshold": 0.0798,
+    "da_precision": 0.0692,
+    "da_recall": 0.7063,
+    "da_f1": 0.126,
+    "pr_auc": 0.1421,
+    "item_recall_all": 0.9444,
+    "item_recall_actions": 0.9444,
+    "item_recall_decisions": 0.9444,
+    "share_of_das_passed": 0.1889,
+    "share_of_words_passed": 0.3531,
+    "recall_by_group": {
+      "sex=F": {
+        "positives": 85,
+        "recall": 0.6941
+      },
+      "sex=M": {
+        "positives": 25,
+        "recall": 0.68
+      },
+      "native_english=no": {
+        "positives": 84,
+        "recall": 0.7619
+      },
+      "native_english=yes": {
+        "positives": 76,
+        "recall": 0.6447
+      },
+      "role=ID": {
+        "positives": 27,
+        "recall": 0.7037
+      },
+      "role=ME": {
+        "positives": 33,
+        "recall": 0.697
+      },
+      "role=PM": {
+        "positives": 78,
+        "recall": 0.7051
+      },
+      "role=UI": {
+        "positives": 22,
+        "recall": 0.7273
+      }
+    }
+  }
+]

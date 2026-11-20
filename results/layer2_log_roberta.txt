@@ -1,0 +1,83 @@
+﻿python.exe : W1120 16:24:03.810000 12948 Lib\site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] 
+NOTE: Redirects are currently not supported in Windows or MacOs.
+At line:1 char:302
++ ... tch {} } }; & C:\Users\malay\.venvs\echoai\Scripts\python.exe src\eva ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (W1120 16:24:03....ndows or MacOs.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]
+Loading weights:   3%|▎         | 11/398 [00:00<00:05, 73.71it/s]
+Loading weights:   5%|▌         | 21/398 [00:00<00:04, 78.52it/s]
+Loading weights:   8%|▊         | 31/398 [00:00<00:04, 86.04it/s]
+Loading weights:  10%|█         | 41/398 [00:00<00:03, 90.50it/s]
+Loading weights:  13%|█▎        | 53/398 [00:00<00:04, 78.04it/s]
+Loading weights:  16%|█▌        | 64/398 [00:00<00:03, 86.62it/s]
+Loading weights:  19%|█▊        | 74/398 [00:00<00:03, 87.94it/s]
+Loading weights:  21%|██        | 84/398 [00:00<00:03, 91.18it/s]
+Loading weights:  24%|██▎       | 94/398 [00:01<00:03, 81.87it/s]
+Loading weights:  26%|██▌       | 103/398 [00:01<00:03, 77.47it/s]
+Loading weights:  28%|██▊       | 111/398 [00:01<00:03, 73.97it/s]
+Loading weights:  30%|███       | 121/398 [00:01<00:03, 71.73it/s]
+Loading weights:  33%|███▎      | 130/398 [00:01<00:03, 74.14it/s]
+Loading weights:  36%|███▌      | 142/398 [00:01<00:03, 74.67it/s]
+Loading weights:  39%|███▊      | 154/398 [00:01<00:02, 81.95it/s]
+Loading weights:  41%|████      | 163/398 [00:02<00:02, 81.24it/s]
+Loading weights:  44%|████▎     | 174/398 [00:02<00:02, 88.46it/s]
+Loading weights:  46%|████▌     | 184/398 [00:02<00:02, 86.58it/s]
+Loading weights:  48%|████▊     | 193/398 [00:02<00:02, 87.41it/s]
+Loading weights:  51%|█████     | 202/398 [00:02<00:02, 82.08it/s]
+Loading weights:  53%|█████▎    | 212/398 [00:02<00:02, 78.93it/s]
+Loading weights:  56%|█████▌    | 223/398 [00:02<00:02, 85.62it/s]
+Loading weights:  58%|█████▊    | 232/398 [00:02<00:02, 82.92it/s]
+Loading weights:  61%|██████    | 241/398 [00:02<00:01, 80.58it/s]
+Loading weights:  63%|██████▎   | 250/398 [00:03<00:01, 75.81it/s]
+Loading weights:  66%|██████▌   | 262/398 [00:03<00:01, 84.45it/s]
+Loading weights:  68%|██████▊   | 272/398 [00:03<00:01, 84.25it/s]
+Loading weights:  71%|███████   | 282/398 [00:03<00:01, 87.90it/s]
+Loading weights:  73%|███████▎  | 291/398 [00:03<00:01, 79.30it/s]
+Loading weights:  76%|███████▌  | 302/398 [00:03<00:01, 73.07it/s]
+Loading weights:  79%|███████▉  | 315/398 [00:03<00:01, 79.53it/s]
+Loading weights:  82%|████████▏ | 328/398 [00:03<00:00, 90.87it/s]
+Loading weights:  85%|████████▍ | 338/398 [00:04<00:00, 85.75it/s]
+Loading weights:  87%|████████▋ | 347/398 [00:04<00:00, 86.79it/s]
+Loading weights:  89%|████████▉ | 356/398 [00:04<00:00, 81.83it/s]
+Loading weights:  92%|█████████▏| 366/398 [00:04<00:00, 81.88it/s]
+Loading weights:  94%|█████████▍| 375/398 [00:04<00:00, 83.92it/s]
+Loading weights:  96%|█████████▋| 384/398 [00:04<00:00, 78.85it/s]
+Loading weights: 100%|██████████| 398/398 [00:04<00:00, 83.95it/s]
+{'meeting': 'ES2004a', 'utterances': 469, 'sent_to_llm': 64, 'prompt_tokens': 3406, 'seconds': 169.6, 'items': 10, 'json_errors': 0}
+{'meeting': 'ES2004b', 'utterances': 867, 'sent_to_llm': 164, 'prompt_tokens': 8191, 'seconds': 203.6, 'items': 29, 'json_errors': 0}
+{'meeting': 'ES2004c', 'utterances': 944, 'sent_to_llm': 204, 'prompt_tokens': 10092, 'seconds': 216.2, 'items': 33, 'json_errors': 0}
+{'meeting': 'ES2004d', 'utterances': 1112, 'sent_to_llm': 170, 'prompt_tokens': 7814, 'seconds': 121.5, 'items': 21, 'json_errors': 0}
+{'meeting': 'IS1009a', 'utterances': 317, 'sent_to_llm': 49, 'prompt_tokens': 2357, 'seconds': 39.8, 'items': 7, 'json_errors': 0}
+{'meeting': 'IS1009b', 'utterances': 685, 'sent_to_llm': 133, 'prompt_tokens': 7631, 'seconds': 391.2, 'items': 18, 'json_errors': 0}
+{'meeting': 'IS1009c', 'utterances': 526, 'sent_to_llm': 129, 'prompt_tokens': 6655, 'seconds': 134.6, 'items': 19, 'json_errors': 0}
+{'meeting': 'IS1009d', 'utterances': 777, 'sent_to_llm': 155, 'prompt_tokens': 7176, 'seconds': 140.2, 'items': 24, 'json_errors': 0}
+{'meeting': 'TS3003a', 'utterances': 484, 'sent_to_llm': 74, 'prompt_tokens': 3560, 'seconds': 68.3, 'items': 15, 'json_errors': 0}
+{'meeting': 'TS3003b', 'utterances': 714, 'sent_to_llm': 150, 'prompt_tokens': 7483, 'seconds': 718.7, 'items': 22, 'json_errors': 0}
+{'meeting': 'TS3003c', 'utterances': 726, 'sent_to_llm': 148, 'prompt_tokens': 6914, 'seconds': 173.0, 'items': 28, 'json_errors': 0}
+{'meeting': 'TS3003d', 'utterances': 1025, 'sent_to_llm': 193, 'prompt_tokens': 9067, 'seconds': 150.2, 'items': 27, 'json_errors': 0}
+{
+  "condition": "roberta",
+  "meetings": 12,
+  "extracted_items": 253,
+  "coverage_all": 0.6806,
+  "coverage_actions": 0.6667,
+  "coverage_decisions": 0.6852,
+  "reference_items": 72,
+  "owner_accuracy_actions": 0.5,
+  "owner_checked": 6,
+  "items_citing_a_reference_line": 0.1937,
+  "items_failing_auto_checks": 0.0237,
+  "auto_check_failures": {
+    "owner_not_in_meeting": 4,
+    "evidence_not_in_input": 1,
+    "deadline_not_in_evidence": 1
+  },
+  "json_errors": 0,
+  "share_of_utterances_sent": 0.1889,
+  "prompt_tokens_per_meeting": 6696,
+  "seconds_per_meeting": 210.6
+}

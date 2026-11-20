@@ -1,0 +1,202 @@
+﻿python.exe : W1120 16:15:14.319000 20476 Lib\site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] 
+NOTE: Redirects are currently not supported in Windows or MacOs.
+At line:1 char:302
++ ... tch {} } }; & C:\Users\malay\.venvs\echoai\Scripts\python.exe src\tra ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (W1120 16:15:14....ndows or MacOs.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+{'train': (92484, 1396), 'dev': (9665, 175), 'test': (8646, 160)}
+
+Loading weights:   0%|          | 0/101 [00:00<?, ?it/s]
+Loading weights:  74%|███████▍  | 75/101 [00:00<00:00, 733.72it/s]
+Loading weights: 100%|██████████| 101/101 [00:00<00:00, 988.08it/s]
+[transformers] [1mRobertaForSequenceClassification LOAD REPORT[0m from: distilbert/distilroberta-base
+Key                         | Status     | 
+----------------------------+------------+-
+lm_head.layer_norm.bias     | UNEXPECTED | 
+lm_head.dense.weight        | UNEXPECTED | 
+roberta.pooler.dense.bias   | UNEXPECTED | 
+roberta.pooler.dense.weight | UNEXPECTED | 
+lm_head.layer_norm.weight   | UNEXPECTED | 
+lm_head.dense.bias          | UNEXPECTED | 
+lm_head.bias                | UNEXPECTED | 
+classifier.dense.bias       | MISSING    | 
+classifier.out_proj.weight  | MISSING    | 
+classifier.out_proj.bias    | MISSING    | 
+classifier.dense.weight     | MISSING    | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your 
+downstream task.
+  fine-tuning on 1396 positives + 11168 sampled negatives
+  epoch 1 step 0/393 loss 0.6049
+  epoch 1 step 100/393 loss 0.6700
+  epoch 1 step 200/393 loss 0.1556
+  epoch 1 step 300/393 loss 0.1792
+  epoch 1: dev PR-AUC 0.1273
+  epoch 2 step 0/393 loss 0.2749
+  epoch 2 step 100/393 loss 0.0654
+  epoch 2 step 200/393 loss 0.2046
+  epoch 2 step 300/393 loss 0.1624
+  epoch 2: dev PR-AUC 0.1593
+  epoch 3 step 0/393 loss 0.1833
+  epoch 3 step 100/393 loss 0.1127
+  epoch 3 step 200/393 loss 0.0943
+  epoch 3 step 300/393 loss 0.2274
+  epoch 3: dev PR-AUC 0.1654
+  epoch 4 step 0/393 loss 0.1335
+  epoch 4 step 100/393 loss 0.0457
+  epoch 4 step 200/393 loss 0.1089
+  epoch 4 step 300/393 loss 0.1382
+  epoch 4: dev PR-AUC 0.1470
+
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]
+Writing model shards: 100%|██████████| 1/1 [00:00<00:00,  3.55it/s]
+Writing model shards: 100%|██████████| 1/1 [00:00<00:00,  3.55it/s]
+{
+  "model": "rules",
+  "threshold": 0.5,
+  "da_precision": 0.0439,
+  "da_recall": 0.25,
+  "da_f1": 0.0747,
+  "pr_auc": 0.0249,
+  "item_recall_all": 0.3333,
+  "item_recall_actions": 0.4444,
+  "item_recall_decisions": 0.2963,
+  "share_of_das_passed": 0.1054,
+  "share_of_words_passed": 0.2138,
+  "recall_by_group": {
+    "sex=F": {
+      "positives": 85,
+      "recall": 0.2471
+    },
+    "sex=M": {
+      "positives": 25,
+      "recall": 0.28
+    },
+    "native_english=no": {
+      "positives": 84,
+      "recall": 0.2738
+    },
+    "native_english=yes": {
+      "positives": 76,
+      "recall": 0.2237
+    },
+    "role=ID": {
+      "positives": 27,
+      "recall": 0.2222
+    },
+    "role=ME": {
+      "positives": 33,
+      "recall": 0.3333
+    },
+    "role=PM": {
+      "positives": 78,
+      "recall": 0.2051
+    },
+    "role=UI": {
+      "positives": 22,
+      "recall": 0.3182
+    }
+  }
+}
+{
+  "model": "tfidf",
+  "threshold": 0.1194,
+  "da_precision": 0.036,
+  "da_recall": 0.7562,
+  "da_f1": 0.0687,
+  "pr_auc": 0.1005,
+  "item_recall_all": 0.8889,
+  "item_recall_actions": 0.9444,
+  "item_recall_decisions": 0.8704,
+  "share_of_das_passed": 0.3887,
+  "share_of_words_passed": 0.4965,
+  "recall_by_group": {
+    "sex=F": {
+      "positives": 85,
+      "recall": 0.7529
+    },
+    "sex=M": {
+      "positives": 25,
+      "recall": 0.72
+    },
+    "native_english=no": {
+      "positives": 84,
+      "recall": 0.7619
+    },
+    "native_english=yes": {
+      "positives": 76,
+      "recall": 0.75
+    },
+    "role=ID": {
+      "positives": 27,
+      "recall": 0.5926
+    },
+    "role=ME": {
+      "positives": 33,
+      "recall": 0.7879
+    },
+    "role=PM": {
+      "positives": 78,
+      "recall": 0.8077
+    },
+    "role=UI": {
+      "positives": 22,
+      "recall": 0.7273
+    }
+  }
+}
+{
+  "model": "roberta",
+  "threshold": 0.0798,
+  "da_precision": 0.0692,
+  "da_recall": 0.7063,
+  "da_f1": 0.126,
+  "pr_auc": 0.1421,
+  "item_recall_all": 0.9444,
+  "item_recall_actions": 0.9444,
+  "item_recall_decisions": 0.9444,
+  "share_of_das_passed": 0.1889,
+  "share_of_words_passed": 0.3531,
+  "recall_by_group": {
+    "sex=F": {
+      "positives": 85,
+      "recall": 0.6941
+    },
+    "sex=M": {
+      "positives": 25,
+      "recall": 0.68
+    },
+    "native_english=no": {
+      "positives": 84,
+      "recall": 0.7619
+    },
+    "native_english=yes": {
+      "positives": 76,
+      "recall": 0.6447
+    },
+    "role=ID": {
+      "positives": 27,
+      "recall": 0.7037
+    },
+    "role=ME": {
+      "positives": 33,
+      "recall": 0.697
+    },
+    "role=PM": {
+      "positives": 78,
+      "recall": 0.7051
+    },
+    "role=UI": {
+      "positives": 22,
+      "recall": 0.7273
+    }
+  }
+}
+  model  da_precision  da_recall  da_f1  pr_auc  item_recall_all  share_of_words_passed
+  rules        0.0439     0.2500 0.0747  0.0249           0.3333                 0.2138
+  tfidf        0.0360     0.7562 0.0687  0.1005           0.8889                 0.4965
+roberta        0.0692     0.7063 0.1260  0.1421           0.9444                 0.3531

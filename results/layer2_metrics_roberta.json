@@ -1,0 +1,134 @@
+{
+  "summary": {
+    "condition": "roberta",
+    "meetings": 12,
+    "extracted_items": 253,
+    "coverage_all": 0.6806,
+    "coverage_actions": 0.6667,
+    "coverage_decisions": 0.6852,
+    "reference_items": 72,
+    "owner_accuracy_actions": 0.5,
+    "owner_checked": 6,
+    "items_citing_a_reference_line": 0.1937,
+    "items_failing_auto_checks": 0.0237,
+    "auto_check_failures": {
+      "owner_not_in_meeting": 4,
+      "evidence_not_in_input": 1,
+      "deadline_not_in_evidence": 1
+    },
+    "json_errors": 0,
+    "share_of_utterances_sent": 0.1889,
+    "prompt_tokens_per_meeting": 6696,
+    "seconds_per_meeting": 210.6
+  },
+  "per_meeting": [
+    {
+      "meeting": "ES2004a",
+      "utterances": 469,
+      "sent_to_llm": 64,
+      "prompt_tokens": 3406,
+      "seconds": 169.6,
+      "items": 10,
+      "json_errors": 0
+    },
+    {
+      "meeting": "ES2004b",
+      "utterances": 867,
+      "sent_to_llm": 164,
+      "prompt_tokens": 8191,
+      "seconds": 203.6,
+      "items": 29,
+      "json_errors": 0
+    },
+    {
+      "meeting": "ES2004c",
+      "utterances": 944,
+      "sent_to_llm": 204,
+      "prompt_tokens": 10092,
+      "seconds": 216.2,
+      "items": 33,
+      "json_errors": 0
+    },
+    {
+      "meeting": "ES2004d",
+      "utterances": 1112,
+      "sent_to_llm": 170,
+      "prompt_tokens": 7814,
+      "seconds": 121.5,
+      "items": 21,
+      "json_errors": 0
+    },
+    {
+      "meeting": "IS1009a",
+      "utterances": 317,
+      "sent_to_llm": 49,
+      "prompt_tokens": 2357,
+      "seconds": 39.8,
+      "items": 7,
+      "json_errors": 0
+    },
+    {
+      "meeting": "IS1009b",
+      "utterances": 685,
+      "sent_to_llm": 133,
+      "prompt_tokens": 7631,
+      "seconds": 391.2,
+      "items": 18,
+      "json_errors": 0
+    },
+    {
+      "meeting": "IS1009c",
+      "utterances": 526,
+      "sent_to_llm": 129,
+      "prompt_tokens": 6655,
+      "seconds": 134.6,
+      "items": 19,
+      "json_errors": 0
+    },
+    {
+      "meeting": "IS1009d",
+      "utterances": 777,
+      "sent_to_llm": 155,
+      "prompt_tokens": 7176,
+      "seconds": 140.2,
+      "items": 24,
+      "json_errors": 0
+    },
+    {
+      "meeting": "TS3003a",
+      "utterances": 484,
+      "sent_to_llm": 74,
+      "prompt_tokens": 3560,
+      "seconds": 68.3,
+      "items": 15,
+      "json_errors": 0
+    },
+    {
+      "meeting": "TS3003b",
+      "utterances": 714,
+      "sent_to_llm": 150,
+      "prompt_tokens": 7483,
+      "seconds": 718.7,
+      "items": 22,
+      "json_errors": 0
+    },
+    {
+      "meeting": "TS3003c",
+      "utterances": 726,
+      "sent_to_llm": 148,
+      "prompt_tokens": 6914,
+      "seconds": 173.0,
+      "items": 28,
+      "json_errors": 0
+    },
+    {
+      "meeting": "TS3003d",
+      "utterances": 1025,
+      "sent_to_llm": 193,
+      "prompt_tokens": 9067,
+      "seconds": 150.2,
+      "items": 27,
+      "json_errors": 0
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# Raw corpus and derived data are re-created by src/prepare_ami.py
+data/
+# Trained weights are too large for git; re-create with src/train_layer1.py
+models/
+# Meeting recordings and transcripts may contain personal data (Lab 7): never commit them
+recordings/
+*.wav
+*.mp3
+*.mp4
+*.m4a
+.env
+__pycache__/
+*.pyc
+.venv/

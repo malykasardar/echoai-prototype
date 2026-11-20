@@ -1,0 +1,8 @@
+# Install PyTorch with CUDA first:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu128
+pandas==3.1.1
+scikit-learn==1.9.1
+transformers==5.23.0
+accelerate
+streamlit
+jiwer

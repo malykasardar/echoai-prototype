@@ -12,6 +12,7 @@ Usage:  python src/eval_layer2.py [--layer1 roberta|tfidf] [--no-filter]
 """
 import argparse
 import json
+import os
 import random
 import re
 import time
@@ -20,7 +21,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from layer2 import Extractor
+from layer2 import make_extractor
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "results"
@@ -50,16 +51,31 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--layer1", default="roberta")
     ap.add_argument("--no-filter", action="store_true", help="send every utterance (cost comparison)")
+    ap.add_argument("--split", default="test", choices=["dev", "test"], help="tune prompts on dev, report on test")
+    ap.add_argument("--meetings", type=int, default=None, help="only the first N meetings (quick runs)")
     args = ap.parse_args()
-    tag = "nofilter" if args.no_filter else args.layer1
+    backend = os.environ.get("ECHOAI_BACKEND", "ollama")
+    tag = ("nofilter" if args.no_filter else args.layer1) + ("_ollama" if backend == "ollama" else "")
+    tag += "_dev" if args.split == "dev" else ""
 
     das = pd.read_csv(ROOT / "data" / "processed" / "dialogue_acts.csv")
-    preds = pd.read_csv(RESULTS / "layer1_test_predictions.csv")
-    test = das[das.split == "test"].merge(preds[["da_id"] + [c for c in preds if c.endswith("_pass")]], on="da_id")
+    if args.split == "test":
+        preds = pd.read_csv(RESULTS / "layer1_test_predictions.csv")
+        test = das[das.split == "test"].merge(preds[["da_id"] + [c for c in preds if c.endswith("_pass")]], on="da_id")
+    else:  # dev predictions are not saved by train_layer1.py, so score them with the saved Layer 1 model
+        from pipeline import Layer1
+        l1, test = Layer1(), das[das.split == "dev"].sort_values(["meeting", "start"], kind="stable").copy()
+        test["roberta_pass"] = 0
+        for m, g in test.groupby("meeting"):
+            s = l1.score([{"text": t} for t in g.text.astype(str)])
+            test.loc[g.index, "roberta_pass"] = [int(x >= l1.threshold) for x in s]
+        del l1
+    if args.meetings:
+        test = test[test.meeting.isin(sorted(test.meeting.unique())[:args.meetings])]
     summ = pd.read_csv(ROOT / "data" / "processed" / "summary_sentences.csv").fillna({"linked_das": ""})
-    summ = summ[(summ.split == "test") & (summ.linked_das != "")]
+    summ = summ[(summ.split == args.split) & (summ.linked_das != "") & summ.meeting.isin(test.meeting.unique())]
 
-    ex = Extractor()
+    ex = make_extractor()
     rows, per_meeting = [], []
     for meeting, m_df in test.groupby("meeting"):
         utts, items, errors, tokens, secs, n_flag = run_meeting(ex, m_df, not args.no_filter, args.layer1)
@@ -113,7 +129,7 @@ def main():
     (RESULTS / f"layer2_metrics_{tag}.json").write_text(json.dumps({"summary": report, "per_meeting": per_meeting}, indent=2))
     print(json.dumps(report, indent=2))
 
-    if not args.no_filter:
+    if not args.no_filter and args.split == "test":
         # Sample for the team's manual review: measures the hallucination rate (Lab 4 target: under 2%).
         random.seed(7)
         sample = items.sample(min(50, len(items)), random_state=7)[

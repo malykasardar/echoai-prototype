@@ -128,3 +128,46 @@ class Extractor:
         raw, n_tokens = self.generate(prompt)
         items, errors = parse_and_validate(raw, utts, shown)
         return {"items": items, "errors": errors, "raw": raw, "prompt_tokens": n_tokens}
+
+
+# JSON schema handed to Ollama so decoding can only produce output of the required shape.
+ITEMS_SCHEMA = {
+    "type": "object", "required": ["items"],
+    "properties": {"items": {"type": "array", "items": {
+        "type": "object", "required": ["type", "description", "owner", "deadline", "evidence", "confidence"],
+        "properties": {
+            "type": {"type": "string", "enum": ["action", "decision"]},
+            "description": {"type": "string"},
+            "owner": {"type": ["string", "null"]},
+            "deadline": {"type": ["string", "null"]},
+            "evidence": {"type": "array", "items": {"type": "string"}},
+            "confidence": {"type": "string", "enum": ["high", "low"]}}}}}}
+
+
+class OllamaExtractor(Extractor):
+    """Same model and prompt served by Ollama (llama.cpp), which generates several times faster than
+    plain transformers on a laptop GPU. Still fully local: Ollama listens on localhost only."""
+
+    def __init__(self, model=None, host=None):
+        import os
+        self.model_name = model or os.environ.get("ECHOAI_OLLAMA_MODEL", "qwen3:4b-instruct-2507-q8_0")
+        self.host = (host or os.environ.get("OLLAMA_HOST", "http://localhost:11434")).rstrip("/")
+        if not self.host.startswith("http"):
+            self.host = "http://" + self.host
+
+    def generate(self, user_msg, max_new_tokens=1536):
+        import urllib.request
+        body = {"model": self.model_name, "stream": False, "format": ITEMS_SCHEMA,
+                "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user_msg}],
+                "options": {"temperature": 0, "num_predict": max_new_tokens, "num_ctx": 16384}}
+        req = urllib.request.Request(f"{self.host}/api/chat", data=json.dumps(body).encode(),
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=900) as r:
+            out = json.loads(r.read())
+        return out["message"]["content"], int(out.get("prompt_eval_count", 0))
+
+
+def make_extractor():
+    """ECHOAI_BACKEND=ollama (default) or transformers."""
+    import os
+    return OllamaExtractor() if os.environ.get("ECHOAI_BACKEND", "ollama") == "ollama" else Extractor()

@@ -12,7 +12,7 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from layer2 import Extractor  # noqa: E402
+from layer2 import make_extractor  # noqa: E402
 from pipeline import Layer1, parse_transcript, run, transcribe  # noqa: E402
 
 st.set_page_config(page_title="EchoAI", page_icon="🎙️", layout="wide")
@@ -21,7 +21,7 @@ LOG = ROOT / "results" / "confirmation_log.csv"
 
 @st.cache_resource(show_spinner="Loading models onto the GPU...")
 def models():
-    return Layer1(), Extractor()
+    return Layer1(), make_extractor()
 
 
 def fmt_time(secs):

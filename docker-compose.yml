@@ -1,0 +1,30 @@
+# docker compose up --build      then open http://localhost:8501
+# First run only:  docker compose exec ollama ollama pull qwen3:4b-instruct-2507-q8_0
+services:
+  ollama:
+    image: ollama/ollama:0.40.16
+    volumes:
+      - ollama-models:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices: [{driver: nvidia, count: all, capabilities: [gpu]}]
+
+  app:
+    build: .
+    ports:
+      - "127.0.0.1:8501:8501"   # localhost only: meeting data never leaves the machine (Lab 7)
+    depends_on: [ollama]
+    volumes:
+      - ./models:/app/models:ro
+      - ./data/processed:/app/data/processed:ro
+      - ./results:/app/results
+      - hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices: [{driver: nvidia, count: all, capabilities: [gpu]}]
+
+volumes:
+  ollama-models:
+  hf-cache:

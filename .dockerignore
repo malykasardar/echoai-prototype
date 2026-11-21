@@ -1,0 +1,9 @@
+.git
+data
+models
+recordings
+results
+!results/layer1_metrics.json
+__pycache__
+*.pyc
+.env

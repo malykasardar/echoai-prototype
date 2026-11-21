@@ -104,7 +104,7 @@ def main():
         role = role_in_sentence(s.text)
         if s.type == "actions" and matches and role:
             owner_total += 1
-            owner_hits += any(it.owner == role for it in matches)
+            owner_hits += any(role in [o.strip() for o in str(it.owner).split(",")] for it in matches)
     summ = summ.assign(found=found)
     reference_das = {(s.meeting, d) for s in summ.itertuples() for d in s.linked_das.split(";")}
     supported = items.apply(lambda r: any((r.meeting, d) in reference_das for d in str(r.evidence_das).split(";")), axis=1)

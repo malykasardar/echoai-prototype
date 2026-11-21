@@ -17,19 +17,22 @@ You receive numbered utterances [U#] that a classifier flagged as possibly actio
 Return ONLY a JSON object of this form:
 {"items": [{"type": "action" | "decision",
             "description": "plain English, at most 15 words",
-            "owner": "speaker label of the person responsible, e.g. PM, or null",
-            "deadline": "deadline exactly as said, e.g. 'next meeting', or null",
+            "owner": "speaker label(s) of who will DO the work, comma-separated if several, or null",
+            "deadline": "a time stated in the cited utterances, copied word for word, or null",
             "evidence": ["U12", "U13"],
             "confidence": "high" | "low"}]}
 Rules:
-- action = someone commits to or is assigned future work. decision = the group explicitly agrees or settles
-  something (e.g. "okay, let's go with that", "so we'll use rubber").
-- Suggestions, opinions, questions, ideas and "it should have..." remarks are NOT decisions unless the group
-  accepts them. If acceptance is unclear, set confidence to "low".
+- action = someone commits to or is assigned future work. decision = the group settles something.
+- A decision can be an explicit agreement ("okay, let's go with that") or a choice stated as settled that
+  nobody objects to ("so it'll be yellow", "our target group is young people", "we'll use rubber").
+- Open suggestions, questions and brainstorming ("what if...", "maybe we could...") are NOT decisions.
+  If you are unsure whether the group accepted something, include it with confidence "low".
+- Owner is the person who will DO the work, not the person who assigns it:
+  "I'll do X" -> the speaker. "You'll do X" -> the person being addressed, if the transcript shows who that is.
+  "We'll do X" -> null. If you cannot tell who is meant, set owner to null. Never default to the speaker.
+- Deadline: copy a time phrase only if it appears in the utterances you cite. Most items have no deadline: null.
 - Only include items clearly supported by the utterances you cite. Do not guess.
 - Cite at most 4 utterances per item: the ones where the commitment or agreement is actually said.
-- owner must be one of the speaker labels in the transcript, or null if nobody is clearly responsible.
-- deadline must be null unless a time is actually stated.
 - Merge repeats of the same item. If there are no items, return {"items": []}."""
 
 
@@ -93,7 +96,7 @@ def parse_and_validate(raw: str, utts, shown_idx):
             item.problems.append("no_evidence")
         if any(e not in shown for e in item.evidence):
             item.problems.append("evidence_not_in_input")  # cites an utterance it was never shown
-        if item.owner and item.owner not in speakers:
+        if item.owner and any(o.strip() not in speakers for o in str(item.owner).split(",")):
             item.problems.append("owner_not_in_meeting")
         if item.deadline:
             cited = " ".join(utts[int(e[1:])]["text"] for e in item.evidence if e in shown).lower()

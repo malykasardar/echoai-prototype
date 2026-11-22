@@ -62,6 +62,15 @@ def build_prompt(utts, flagged_idx, context=1):
     return (f"Speakers: {legend}\nFlagged utterances are marked with *.\n\n" + "\n".join(lines)), keep
 
 
+def normalize_owner(owner):
+    """The model sometimes writes "null" as text, or a role's full name instead of its label."""
+    if owner is None or str(owner).strip().lower() in ("", "null", "none", "n/a"):
+        return None
+    full_names = {v.lower(): k for k, v in ROLES.items()}
+    parts = [full_names.get(p.strip().lower(), p.strip()) for p in str(owner).split(",")]
+    return ", ".join(parts)
+
+
 def parse_and_validate(raw: str, utts, shown_idx):
     """Schema check plus grounding checks. Items that fail are kept but flagged, never silently fixed."""
     errors = []
@@ -85,7 +94,7 @@ def parse_and_validate(raw: str, utts, shown_idx):
         if not isinstance(it, dict):
             continue
         item = Item(type=str(it.get("type", "")).lower(), description=str(it.get("description", "")).strip(),
-                    owner=it.get("owner") or None, deadline=it.get("deadline") or None,
+                    owner=normalize_owner(it.get("owner")), deadline=it.get("deadline") or None,
                     evidence=[str(e) for e in (it.get("evidence") or [])],
                     confidence=str(it.get("confidence", "low")).lower())
         if item.type not in ("action", "decision"):

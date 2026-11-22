@@ -1,0 +1,16 @@
+[
+  {
+    "meeting": "ES2004a",
+    "model": "openai/whisper-small",
+    "seconds": 36.7,
+    "wer_all_words": 0.3057,
+    "wer_without_fillers": 0.2745
+  },
+  {
+    "meeting": "ES2004a",
+    "model": "openai/whisper-large-v3-turbo",
+    "seconds": 18.8,
+    "wer_all_words": 0.2919,
+    "wer_without_fillers": 0.2601
+  }
+]

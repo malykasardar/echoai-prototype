@@ -1,0 +1,23 @@
+{
+  "meetings": [
+    "ES2004a",
+    "ES2004b",
+    "ES2004c",
+    "ES2004d"
+  ],
+  "reference_items": 15,
+  "with_layer1": {
+    "prompt_tokens": 30775,
+    "seconds": 162.0,
+    "items": 105,
+    "coverage": 0.8
+  },
+  "without_layer1": {
+    "prompt_tokens": 84633,
+    "seconds": 437.5,
+    "items": 191,
+    "coverage": 0.6667
+  },
+  "token_reduction": 0.6364,
+  "time_reduction": 0.6297
+}

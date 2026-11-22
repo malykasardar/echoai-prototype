@@ -32,10 +32,16 @@ def parse_transcript(text: str):
     return utts
 
 
-def transcribe(audio_path: str, model_id="openai/whisper-small"):
+def transcribe(audio_path: str, model_id="openai/whisper-large-v3-turbo"):
+    """large-v3-turbo: lower word error rate than whisper-small on AMI audio and twice as fast (results/asr_metrics.json).
+    WAV is read directly; MP3/M4A need ffmpeg (installed in the Docker image)."""
     from transformers import pipeline
     asr = pipeline("automatic-speech-recognition", model=model_id, dtype=torch.float16, device="cuda")
-    out = asr(audio_path, return_timestamps=True, chunk_length_s=30, generate_kwargs={"language": "en"})
+    audio = audio_path
+    if str(audio_path).lower().endswith(".wav"):
+        from eval_asr import load_wav
+        audio = load_wav(audio_path)
+    out = asr(audio, return_timestamps=True, chunk_length_s=30, generate_kwargs={"language": "en"})
     del asr
     torch.cuda.empty_cache()
     return [{"speaker": "Speaker", "text": c["text"].strip(), "start": c["timestamp"][0]} for c in out["chunks"]

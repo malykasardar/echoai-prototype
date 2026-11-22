@@ -1,0 +1,60 @@
+{
+  "summary": {
+    "condition": "nofilter_ollama",
+    "meetings": 4,
+    "extracted_items": 191,
+    "coverage_all": 0.6667,
+    "coverage_actions": 0.5,
+    "coverage_decisions": 0.7273,
+    "reference_items": 15,
+    "owner_accuracy_actions": 1.0,
+    "owner_checked": 1,
+    "items_citing_a_reference_line": 0.1309,
+    "items_failing_auto_checks": 0.0052,
+    "auto_check_failures": {
+      "deadline_not_in_evidence": 1
+    },
+    "json_errors": 0,
+    "share_of_utterances_sent": 1.0,
+    "prompt_tokens_per_meeting": 21158,
+    "seconds_per_meeting": 109.4
+  },
+  "per_meeting": [
+    {
+      "meeting": "ES2004a",
+      "utterances": 469,
+      "sent_to_llm": 469,
+      "prompt_tokens": 11189,
+      "seconds": 59.7,
+      "items": 20,
+      "json_errors": 0
+    },
+    {
+      "meeting": "ES2004b",
+      "utterances": 867,
+      "sent_to_llm": 867,
+      "prompt_tokens": 22816,
+      "seconds": 127.3,
+      "items": 59,
+      "json_errors": 0
+    },
+    {
+      "meeting": "ES2004c",
+      "utterances": 944,
+      "sent_to_llm": 944,
+      "prompt_tokens": 24182,
+      "seconds": 124.8,
+      "items": 60,
+      "json_errors": 0
+    },
+    {
+      "meeting": "ES2004d",
+      "utterances": 1112,
+      "sent_to_llm": 1112,
+      "prompt_tokens": 26446,
+      "seconds": 125.7,
+      "items": 52,
+      "json_errors": 0
+    }
+  ]
+}

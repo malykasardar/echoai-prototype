@@ -53,7 +53,7 @@ if screen == "Meetings":
     st.header("Meetings")
     src = st.radio("Add a meeting", ["Paste a transcript", "Upload audio", "AMI test meeting (unseen by the model)"],
                    horizontal=True)
-    name, utts, audio_bytes = None, None, None
+    name, utts, audio_bytes, audio_ext = None, None, None, ".wav"
     if src == "Paste a transcript":
         name = st.text_input("Meeting name", "Team stand-up")
         text = st.text_area("One line per turn: `Speaker: what they said` (optional `[mm:ss]` at the start)", height=220)
@@ -65,7 +65,7 @@ if screen == "Meetings":
         up = st.file_uploader("Audio file", type=["wav", "mp3", "m4a"])
         name = st.text_input("Meeting name", up.name if up else "Recorded meeting")
         if up and consent:
-            audio_bytes = up.getvalue()
+            audio_bytes, audio_ext = up.getvalue(), Path(up.name).suffix.lower()
     else:
         ami = ami_meetings()
         if ami:
@@ -77,7 +77,7 @@ if screen == "Meetings":
     if st.button("Process meeting", type="primary", disabled=not (utts or audio_bytes)):
         layer1, extractor = models()
         if audio_bytes:
-            with st.spinner("Transcribing with Whisper..."), tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+            with st.spinner("Transcribing with Whisper..."), tempfile.NamedTemporaryFile(suffix=audio_ext, delete=False) as f:
                 f.write(audio_bytes)
                 utts = transcribe(f.name)
         t0 = datetime.now()

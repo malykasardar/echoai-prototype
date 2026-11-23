@@ -4,7 +4,8 @@ services:
   ollama:
     image: ollama/ollama:0.40.16
     volumes:
-      - ollama-models:/root/.ollama
+      # Reuse models already pulled by a local Ollama install: set OLLAMA_DIR=C:/Users/<you>/.ollama
+      - ${OLLAMA_DIR:-ollama-models}:/root/.ollama
     deploy:
       resources:
         reservations:

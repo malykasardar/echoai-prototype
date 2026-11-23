@@ -97,7 +97,7 @@ if screen == "Meetings":
             "Decisions": sum(i["type"] == "decision" for i in m["items"]),
             "Actions": sum(i["type"] == "action" for i in m["items"]),
             "Awaiting review": sum(i["status"] == "pending" for i in m["items"])}
-            for n, m in st.session_state.meetings.items()]), hide_index=True, use_container_width=True)
+            for n, m in st.session_state.meetings.items()]), hide_index=True, width="stretch")
 
 # ---------------- Summary ----------------
 elif screen == "Summary":
@@ -173,4 +173,4 @@ else:
              "Said at": fmt_time(m["utts"][int(it["evidence"][0][1:])]["start"]) if it["evidence"] and it["evidence"][0][1:].isdigit() else ""}
             for n, m in st.session_state.meetings.items() for it in m["items"]
             if it["type"] == "action" and it["owner"] == me and it["status"] != "rejected"]
-    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+    st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")

@@ -122,3 +122,10 @@ microphone tracks per speaker (as Zoom and Teams provide) are the main improveme
 - Whisper does not identify speakers, so owners from uploaded audio are confirmed by the user in the app
   (the fallback planned in Lab 7).
 - The hallucination rate needs the team's manual review to be confirmed.
+
+## Deployment test (M5 evidence, Nov 22)
+
+`docker compose up` on the RTX 5070 laptop: both containers started, the app answered on localhost:8501,
+the Ollama container reused the locally downloaded model, and the app container saw the GPU. The full pipeline
+run inside the app container on a 9-line sample stand-up returned the same 5 correct items as the local test
+(4 actions with owners and 3 deadlines, 1 decision) in 65.2 s, including first-time model loading.

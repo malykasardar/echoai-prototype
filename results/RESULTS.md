@@ -82,6 +82,42 @@ so differences of a few points are within noise. The test set was not used for a
 Only 20.5% of extracted items cite a line that AMI's summary also cites. AMI summaries list the main outcomes,
 not every commitment, so this is a lower bound on precision; the manual review measures the real figure.
 
+## Precision filter: fewer, better items for the reviewer (Nov 27)
+
+Running the app showed the problem the test numbers hint at: Layer 2 drafted **25.2 items per meeting** while AMI's
+human summaries list 6. Most extras were ideas someone floated, findings read off a slide, meeting logistics
+("go back to the room") and repeats. Three changes target this:
+
+1. **Precision filter** (`src/review_filter.py`, no GPU). Every item gets a 0–100 confidence score: the base is how
+   strongly Layer 1 rated the cited lines, then language rules add points (decision or commitment words,
+   someone else agreed) or take them off (only a suggestion, only a question, reported findings, meeting logistics,
+   evidence spread over many lines). Failed grounding checks cap the score at 30. Items under 50 and repeats
+   of a stronger item are hidden by default; the reviewer can still show them in the app.
+2. **Prompt v3** (`src/layer2.py`). Names the exclusions above and asks for a short verbatim quote, which the
+   validator checks against the cited lines (`quote_not_in_evidence`). v2 stays available with `ECHOAI_PROMPT=v2`.
+3. **Review screen**: items show their confidence, owner, deadline and the key quote at a glance, with the
+   context lines and the scoring reasons one click away, and a one-click confirm for high-confidence items.
+
+**Filter measured on the saved final test run** (prompt v2, 12 meetings; `python src/eval_filter.py`):
+
+| | All drafted (before) | Shown by default (after) | Change |
+|---|---|---|---|
+| Items per meeting the reviewer reads | 25.2 | **14.0** | −44% |
+| Items citing a line AMI's summary also cites | 20.5% | **29.2%** | +8.7 points (+42% relative) |
+| AMI reference lines still cited | 75 of 160 | 61 of 160 | −19% |
+
+Why items were hidden (an item can have several reasons): little action/decision language 74, only a suggestion 31,
+meeting logistics 16, evidence spread over many lines 9, only a question 5, reported findings 5, repeats 3,
+failed grounding checks 3.
+
+The trade-off is explicit: the default view drops some lines AMI annotators linked to a summary item, which is why
+hidden items stay one switch away instead of being deleted. Caveats: the rules were written after reading this
+test run's output, so these numbers are optimistic until confirmed on the dev split; "items citing a reference
+line" is a lower bound on precision, as above; prompt v3 has not been run yet (it needs the GPU).
+
+To confirm locally: `python src/eval_layer2.py --split dev` then `python src/eval_layer2.py` (both use prompt v3
+and report coverage for all drafted items and for the items shown by default, under `shown_by_default`).
+
 ## Does Layer 1 pay for itself? (Lab 3 ROI argument)
 
 Same 4 test meetings (ES2004a–d, 15 reference items), Layer 2 run with and without Layer 1:

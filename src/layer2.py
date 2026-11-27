@@ -5,6 +5,7 @@ Runs an open instruction-tuned model locally on the GPU, so no meeting text leav
 against a fixed schema and against the meeting itself before they are shown (Lab 3 section 6.1).
 """
 import json
+import os
 import re
 from dataclasses import dataclass, field
 
@@ -12,7 +13,7 @@ MODEL_ID = "Qwen/Qwen3-4B-Instruct-2507"
 ROLES = {"PM": "Project Manager", "ID": "Industrial Designer", "UI": "User Interface Designer",
          "ME": "Marketing Expert"}
 
-SYSTEM = """You extract action items and decisions from meeting transcripts for a meeting summary app.
+SYSTEM_V2 = """You extract action items and decisions from meeting transcripts for a meeting summary app.
 You receive numbered utterances [U#] that a classifier flagged as possibly actionable, with nearby context.
 Return ONLY a JSON object of this form:
 {"items": [{"type": "action" | "decision",
@@ -36,6 +37,48 @@ Rules:
 - Merge repeats of the same item. If there are no items, return {"items": []}."""
 
 
+# Prompt v3 (precision): v2 drafted ~25 items per meeting against ~6 in the human summary, mostly
+# brainstormed features, findings read out from slides, and meeting logistics. v3 names those exclusions and
+# asks for a short verbatim quote, which parse_and_validate checks against the cited lines.
+SYSTEM_V3 = """You extract action items and decisions from meeting transcripts for a meeting summary app.
+You receive numbered utterances [U#] that a classifier flagged as possibly actionable, with nearby context.
+Most flagged utterances are NOT items: the classifier is tuned to miss nothing, so expect only a few real items.
+Return ONLY a JSON object of this form:
+{"items": [{"type": "action" | "decision",
+            "description": "plain English, at most 15 words, starting with a verb for actions",
+            "owner": "speaker label(s) of who will DO the work, comma-separated if several, or null",
+            "deadline": "a time stated in the cited utterances, copied word for word, or null",
+            "evidence": ["U12", "U13"],
+            "quote": "the shortest exact words from one cited utterance that show the commitment or agreement",
+            "confidence": "high" | "low"}]}
+What counts:
+- action = a specific person commits to, or is given, a concrete task to do after this point in the meeting
+  ("I'll check the cost", "you'll do the components concept", "let's each send our sketches by Friday").
+- decision = the group settles a choice: explicit agreement ("okay, let's go with that", "we decided on
+  rubber") or a choice stated as final that nobody objects to ("so it'll be yellow").
+What does NOT count (leave these out):
+- Ideas, wishes and features someone lists or presents ("it should have a mute button", "maybe a flip top",
+  "what if it glowed") unless the group then agrees to them.
+- Questions, unless the answer settles the matter; then cite the answer too.
+- Findings or facts read out ("research shows people want...", "the trend is fruit colours"): these inform a
+  decision but are not one.
+- Meeting logistics: when the next meeting is, going back to rooms, tool training, passing the pen,
+  presenting slides now, questionnaires, jokes and small talk.
+- Restating something already listed: merge repeats into one item.
+Fields:
+- Owner is the person who will DO the work, not the person who assigns it:
+  "I'll do X" -> the speaker. "You'll do X" -> the person being addressed, if the transcript shows who that is.
+  "We'll do X" -> null. If you cannot tell who is meant, set owner to null. Decisions have owner null.
+- Deadline: copy a time phrase only if it appears in the utterances you cite. Most items have no deadline: null.
+- quote must be copied exactly from a cited utterance, 3 to 12 words.
+- confidence "high" only if the quote alone shows a clear commitment or agreement; otherwise "low".
+- Cite at most 4 utterances per item. If there are no items, return {"items": []}."""
+
+
+PROMPT_VERSION = os.environ.get("ECHOAI_PROMPT", "v3")
+SYSTEM = SYSTEM_V3 if PROMPT_VERSION == "v3" else SYSTEM_V2
+
+
 @dataclass
 class Item:
     type: str
@@ -45,6 +88,10 @@ class Item:
     evidence: list
     confidence: str
     problems: list = field(default_factory=list)
+    quote: str | None = None
+    score: int = 0                      # 0-100, set by review_filter.assess
+    reasons: list = field(default_factory=list)
+    hidden: bool = False                # below the show threshold or a repeat; kept for the reviewer
 
 
 def build_prompt(utts, flagged_idx, context=1):
@@ -69,6 +116,10 @@ def normalize_owner(owner):
     full_names = {v.lower(): k for k, v in ROLES.items()}
     parts = [full_names.get(p.strip().lower(), p.strip()) for p in str(owner).split(",")]
     return ", ".join(parts)
+
+
+def _norm(text):
+    return " ".join(re.findall(r"[a-z0-9']+", str(text).lower()))
 
 
 def parse_and_validate(raw: str, utts, shown_idx):
@@ -96,7 +147,8 @@ def parse_and_validate(raw: str, utts, shown_idx):
         item = Item(type=str(it.get("type", "")).lower(), description=str(it.get("description", "")).strip(),
                     owner=normalize_owner(it.get("owner")), deadline=it.get("deadline") or None,
                     evidence=[str(e) for e in (it.get("evidence") or [])],
-                    confidence=str(it.get("confidence", "low")).lower())
+                    confidence=str(it.get("confidence", "low")).lower(),
+                    quote=(str(it["quote"]).strip() or None) if it.get("quote") else None)
         if item.type not in ("action", "decision"):
             item.problems.append("bad_type")
         if not item.description:
@@ -111,6 +163,12 @@ def parse_and_validate(raw: str, utts, shown_idx):
             cited = " ".join(utts[int(e[1:])]["text"] for e in item.evidence if e in shown).lower()
             if not any(w in cited for w in re.findall(r"[a-z0-9]+", item.deadline.lower()) if len(w) > 2):
                 item.problems.append("deadline_not_in_evidence")
+        if item.quote:
+            cited = _norm(" ".join(utts[int(e[1:])]["text"] for e in item.evidence if e in shown))
+            q = _norm(item.quote).split()
+            # Exact match, or nearly: transcripts are messy and the model may drop a filler word.
+            if q and _norm(item.quote) not in cited and sum(w in cited.split() for w in q) / len(q) < 0.8:
+                item.problems.append("quote_not_in_evidence")  # the model paraphrased or invented the quote
         if item.problems:
             item.confidence = "low"
         items.append(item)
@@ -153,7 +211,12 @@ ITEMS_SCHEMA = {
             "owner": {"type": ["string", "null"]},
             "deadline": {"type": ["string", "null"]},
             "evidence": {"type": "array", "items": {"type": "string"}},
+            "quote": {"type": "string"},
             "confidence": {"type": "string", "enum": ["high", "low"]}}}}}}
+if PROMPT_VERSION != "v3":
+    ITEMS_SCHEMA["properties"]["items"]["items"]["properties"].pop("quote")
+else:
+    ITEMS_SCHEMA["properties"]["items"]["items"]["required"].insert(5, "quote")
 
 
 class OllamaExtractor(Extractor):

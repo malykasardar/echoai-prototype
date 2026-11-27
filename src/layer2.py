@@ -75,7 +75,9 @@ Fields:
 - Cite at most 4 utterances per item. If there are no items, return {"items": []}."""
 
 
-PROMPT_VERSION = os.environ.get("ECHOAI_PROMPT", "v3")
+# v2 stays the default: on the dev split v3 cut items per meeting by half but found fewer reference items
+# (coverage 76.5% -> 64.7%), see results/RESULTS.md. Set ECHOAI_PROMPT=v3 to use the stricter prompt.
+PROMPT_VERSION = os.environ.get("ECHOAI_PROMPT", "v2")
 SYSTEM = SYSTEM_V3 if PROMPT_VERSION == "v3" else SYSTEM_V2
 
 

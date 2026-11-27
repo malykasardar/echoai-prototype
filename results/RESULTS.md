@@ -93,8 +93,9 @@ human summaries list 6. Most extras were ideas someone floated, findings read of
    someone else agreed) or take them off (only a suggestion, only a question, reported findings, meeting logistics,
    evidence spread over many lines). Failed grounding checks cap the score at 30. Items under 50 and repeats
    of a stronger item are hidden by default; the reviewer can still show them in the app.
-2. **Prompt v3** (`src/layer2.py`). Names the exclusions above and asks for a short verbatim quote, which the
-   validator checks against the cited lines (`quote_not_in_evidence`). v2 stays available with `ECHOAI_PROMPT=v2`.
+2. **Prompt v3** (`src/layer2.py`, opt-in with `ECHOAI_PROMPT=v3`). Names the exclusions above and asks for a short
+   verbatim quote, which the validator checks against the cited lines (`quote_not_in_evidence`). Tested on the
+   GPU (below) it lost too many real items, so v2 stays the default.
 3. **Review screen**: items show their confidence, owner, deadline and the key quote at a glance, with the
    context lines and the scoring reasons one click away, and a one-click confirm for high-confidence items.
 
@@ -111,12 +112,24 @@ meeting logistics 16, evidence spread over many lines 9, only a question 5, repo
 failed grounding checks 3.
 
 The trade-off is explicit: the default view drops some lines AMI annotators linked to a summary item, which is why
-hidden items stay one switch away instead of being deleted. Caveats: the rules were written after reading this
-test run's output, so these numbers are optimistic until confirmed on the dev split; "items citing a reference
-line" is a lower bound on precision, as above; prompt v3 has not been run yet (it needs the GPU).
+hidden items stay one switch away instead of being deleted. With the AMI summaries available, coverage of the 72
+reference items drops from 68.1% to 59.7% in the default view (all items remain one switch away). The rules were
+written after reading this test run's output, so these numbers are optimistic.
 
-To confirm locally: `python src/eval_layer2.py --split dev` then `python src/eval_layer2.py` (both use prompt v3
-and report coverage for all drafted items and for the items shown by default, under `shown_by_default`).
+**GPU runs, Nov 27** (RTX 5060 Laptop 8 GB, qwen3:4b-instruct-2507-q8_0 via Ollama; about 13% of the model ran on
+the CPU because the 16k context needs 7.3 GB, so times are slower than on the 12 GB laptop):
+
+| | Dev, v2 (Nov 20) | Dev, v3 all | Dev, v3 shown | Test, v2 all | Test, v2 shown (filter) | Test, v3 all | Test, v3 shown |
+|---|---|---|---|---|---|---|---|
+| Items per meeting | 21.4 | 20.5 | 9.9 | 25.2 | 14.0 | 16.8 | 8.2 |
+| Coverage of human items | 76.5% | 64.7% | 52.9% | 68.1% | 59.7% | 55.6% | 43.1% |
+| Items citing a reference line | 21.2% | 22.5% | 29.5% | 20.5% | 29.2% | 23.8% | 36.4% |
+| Seconds per meeting | n/a | 81.9 | | 41.8 | | 71.9 | |
+
+Decision, made on dev as before: v3 found fewer human items on dev (64.7% vs 76.5%) without a matching gain, so
+**v2 + the precision filter is the default**. It shows the reviewer 14 items per meeting instead of 25 and keeps
+59.7% coverage in the default view and 68.1% with hidden items included. v3's quote check failed on 9–12% of its
+items, mostly paraphrased quotes, which also argues against it for now.
 
 ## Does Layer 1 pay for itself? (Lab 3 ROI argument)
 

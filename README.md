@@ -10,7 +10,7 @@ to an online service.
 ## Pipeline
 
 ```
-audio --Whisper--> transcript --Layer 1--> flagged utterances --Layer 2--> JSON items --checks--> review screen
+audio --Whisper--> transcript --Layer 1--> flagged utterances --Layer 2--> JSON items --checks + scoring--> review screen
                                 (DistilRoBERTa                  (Qwen3-4B-Instruct,
                                  classifier)                     local)
 ```
@@ -20,7 +20,8 @@ audio --Whisper--> transcript --Layer 1--> flagged utterances --Layer 2--> JSON 
 | Data | Builds a labelled dataset from the AMI Meeting Corpus (139 meetings, 110,795 utterances) | `src/prepare_ami.py` |
 | Layer 1 | Flags utterances that may contain an action item or decision; compares keyword rules, TF-IDF and a fine-tuned transformer | `src/train_layer1.py` |
 | Layer 2 | Extracts items as JSON from the flagged utterances; checks the schema, the cited evidence, the owner and the deadline | `src/layer2.py` |
-| Evaluation | Scores the full pipeline against AMI's human-written summaries | `src/eval_layer2.py` |
+| Precision filter | Scores each item 0–100 and hides likely noise (ideas, questions, logistics, repeats) without deleting it | `src/review_filter.py` |
+| Evaluation | Scores the full pipeline against AMI's human-written summaries; `eval_filter.py` re-scores a saved run without a GPU | `src/eval_layer2.py`, `src/eval_filter.py` |
 | App | Meetings, Summary and My Tasks screens (Lab 1 design) | `app/app.py` |
 
 ## Results

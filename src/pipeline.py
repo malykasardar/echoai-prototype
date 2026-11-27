@@ -69,9 +69,12 @@ class Layer1:
 
 
 def run(utts, layer1: Layer1, extractor, chunk=60):
+    """Layer 1 flags, Layer 2 drafts, then the precision filter scores every item and hides likely noise
+    (hidden items stay available to the reviewer)."""
+    from review_filter import assess
     scores = layer1.score(utts)
     flagged = [i for i, s in enumerate(scores) if s >= layer1.threshold]
     items = []
     for c in range(0, len(flagged), chunk):
         items += extractor.extract(utts, flagged[c:c + chunk])["items"]
-    return scores, flagged, items
+    return scores, flagged, assess(items, utts, scores)

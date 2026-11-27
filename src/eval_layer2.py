@@ -21,7 +21,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from layer2 import make_extractor
+from layer2 import PROMPT_VERSION, make_extractor
+from review_filter import assess
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "results"
@@ -44,6 +45,8 @@ def run_meeting(ex, m_df, use_filter, layer1):
     for c in range(0, len(flagged), CHUNK):
         out = ex.extract(utts, flagged[c:c + CHUNK])
         items += out["items"]; errors += out["errors"]; tokens += out["prompt_tokens"]
+    scores = m_df[f"{layer1}_score"].tolist() if f"{layer1}_score" in m_df else None
+    items = assess(items, utts, scores)  # precision filter: scores items, hides likely noise and repeats
     return utts, items, errors, tokens, time.perf_counter() - t0, len(flagged)
 
 
@@ -56,19 +59,22 @@ def main():
     args = ap.parse_args()
     backend = os.environ.get("ECHOAI_BACKEND", "ollama")
     tag = ("nofilter" if args.no_filter else args.layer1) + ("_ollama" if backend == "ollama" else "")
+    tag += f"_{PROMPT_VERSION}" if PROMPT_VERSION != "v2" else ""
     tag += "_dev" if args.split == "dev" else ""
 
     das = pd.read_csv(ROOT / "data" / "processed" / "dialogue_acts.csv")
     if args.split == "test":
         preds = pd.read_csv(RESULTS / "layer1_test_predictions.csv")
-        test = das[das.split == "test"].merge(preds[["da_id"] + [c for c in preds if c.endswith("_pass")]], on="da_id")
+        test = das[das.split == "test"].merge(
+            preds[["da_id"] + [c for c in preds if c.endswith("_pass") or c.endswith("_score")]], on="da_id")
     else:  # dev predictions are not saved by train_layer1.py, so score them with the saved Layer 1 model
         from pipeline import Layer1
         l1, test = Layer1(), das[das.split == "dev"].sort_values(["meeting", "start"], kind="stable").copy()
-        test["roberta_pass"] = 0
+        test["roberta_pass"], test["roberta_score"] = 0, 0.0
         for m, g in test.groupby("meeting"):
             s = l1.score([{"text": t} for t in g.text.astype(str)])
             test.loc[g.index, "roberta_pass"] = [int(x >= l1.threshold) for x in s]
+            test.loc[g.index, "roberta_score"] = s
         del l1
     if args.meetings:
         test = test[test.meeting.isin(sorted(test.meeting.unique())[:args.meetings])]
@@ -85,40 +91,53 @@ def main():
         for it in items:
             ev_idx = [int(e[1:]) for e in it.evidence if re.fullmatch(r"U\d+", e) and int(e[1:]) < len(utts)]
             rows.append({"meeting": meeting, **asdict(it), "problems": ";".join(it.problems),
+                         "reasons": "; ".join(it.reasons),
                          "evidence_das": ";".join(utts[i]["da_id"] for i in ev_idx),
                          "evidence_text": " | ".join(f"{utts[i]['speaker']}: {utts[i]['text']}" for i in ev_idx),
                          "start": utts[ev_idx[0]]["start"] if ev_idx else None})
     items = pd.DataFrame(rows)
     items["evidence"] = items.evidence.apply(";".join)
+    items["problems"] = items.problems.fillna("")
     items.to_csv(RESULTS / f"layer2_items_{tag}.csv", index=False)
 
-    # Coverage and owner accuracy against the human summaries.
-    cited = {}
-    for r in items.itertuples():
-        for d in str(r.evidence_das).split(";"):
-            cited.setdefault((r.meeting, d), []).append(r)
-    found, owner_hits, owner_total = [], 0, 0
-    for s in summ.itertuples():
-        matches = [it for d in s.linked_das.split(";") for it in cited.get((s.meeting, d), [])]
-        found.append(bool(matches))
-        role = role_in_sentence(s.text)
-        if s.type == "actions" and matches and role:
-            owner_total += 1
-            owner_hits += any(role in [o.strip() for o in str(it.owner).split(",")] for it in matches)
-    summ = summ.assign(found=found)
-    reference_das = {(s.meeting, d) for s in summ.itertuples() for d in s.linked_das.split(";")}
-    supported = items.apply(lambda r: any((r.meeting, d) in reference_das for d in str(r.evidence_das).split(";")), axis=1)
     pm = pd.DataFrame(per_meeting)
+
+    def score_set(items):
+        """Coverage and owner accuracy against the human summaries, for one set of items."""
+        cited = {}
+        for r in items.itertuples():
+            for d in str(r.evidence_das).split(";"):
+                cited.setdefault((r.meeting, d), []).append(r)
+        found, owner_hits, owner_total = [], 0, 0
+        for s in summ.itertuples():
+            matches = [it for d in s.linked_das.split(";") for it in cited.get((s.meeting, d), [])]
+            found.append(bool(matches))
+            role = role_in_sentence(s.text)
+            if s.type == "actions" and matches and role:
+                owner_total += 1
+                owner_hits += any(role in [o.strip() for o in str(it.owner).split(",")] for it in matches)
+        found = pd.Series(found, index=summ.index, dtype=bool)
+        reference_das = {(s.meeting, d) for s in summ.itertuples() for d in s.linked_das.split(";")}
+        supported = items.apply(lambda r: any((r.meeting, d) in reference_das for d in str(r.evidence_das).split(";")),
+                                axis=1) if len(items) else pd.Series(dtype=bool)
+        return {
+            "extracted_items": len(items),
+            "items_per_meeting": round(len(items) / len(pm), 1),
+            "coverage_all": round(found.mean(), 4),
+            "coverage_actions": round(found[summ.type == "actions"].mean(), 4),
+            "coverage_decisions": round(found[summ.type == "decisions"].mean(), 4),
+            "owner_accuracy_actions": round(owner_hits / owner_total, 4) if owner_total else None,
+            "owner_checked": owner_total,
+            "items_citing_a_reference_line": round(supported.mean(), 4) if len(items) else None,
+        }
+
+    shown = items[~items.hidden]
     report = {
-        "condition": tag,
-        "meetings": len(pm), "extracted_items": len(items),
-        "coverage_all": round(summ.found.mean(), 4),
-        "coverage_actions": round(summ[summ.type == "actions"].found.mean(), 4),
-        "coverage_decisions": round(summ[summ.type == "decisions"].found.mean(), 4),
+        "condition": tag, "prompt": PROMPT_VERSION,
+        "meetings": len(pm),
+        **score_set(items),
         "reference_items": len(summ),
-        "owner_accuracy_actions": round(owner_hits / owner_total, 4) if owner_total else None,
-        "owner_checked": owner_total,
-        "items_citing_a_reference_line": round(supported.mean(), 4),
+        "shown_by_default": score_set(shown),  # after the precision filter (review_filter.py)
         "items_failing_auto_checks": round((items.problems != "").mean(), 4),
         "auto_check_failures": items.problems[items.problems != ""].str.split(";").explode().value_counts().to_dict(),
         "json_errors": int(pm.json_errors.sum()),
@@ -136,7 +155,8 @@ def main():
             ["meeting", "start", "type", "description", "owner", "deadline", "evidence_text"]]
         for col in ["supported_by_evidence (y/n)", "owner_correct (y/n/na)", "deadline_correct (y/n/na)", "reviewer", "notes"]:
             sample[col] = ""
-        sample.to_csv(RESULTS / "manual_review_sample.csv", index=False)
+        name = "manual_review_sample.csv" if tag == "roberta_ollama" else f"manual_review_sample_{tag}.csv"
+        sample.to_csv(RESULTS / name, index=False)  # never overwrite the team's original review sheet
 
 
 if __name__ == "__main__":

@@ -1,0 +1,36 @@
+{
+  "tag": "roberta_ollama",
+  "show_at": 50,
+  "before": {
+    "set": "all drafted (before)",
+    "items": 302,
+    "items_per_meeting": 25.2,
+    "decisions": 201,
+    "actions": 101,
+    "items_citing_a_reference_line": 0.2053,
+    "reference_lines_cited": 75,
+    "reference_lines_total": 160
+  },
+  "after": {
+    "set": "shown, score >= 50 (after)",
+    "items": 168,
+    "items_per_meeting": 14.0,
+    "decisions": 121,
+    "actions": 47,
+    "items_citing_a_reference_line": 0.2917,
+    "reference_lines_cited": 61,
+    "reference_lines_total": 160
+  },
+  "why_hidden_items_scored_low": {
+    "little action/decision language": 74,
+    "only a suggestion": 31,
+    "meeting logistics": 16,
+    "model unsure": 11,
+    "evidence spread over many lines": 9,
+    "only a question": 5,
+    "reports findings, not a choice": 5,
+    "repeat": 3,
+    "check failed: evidence not in input": 2,
+    "check failed: deadline not in evidence": 1
+  }
+}
